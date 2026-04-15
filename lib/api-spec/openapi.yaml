@@ -3,13 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: OnchainMind x AGL API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: projects
+    description: Project management
+  - name: npcs
+    description: NPC management
+  - name: npc-chat
+    description: NPC chat interactions
+  - name: memory
+    description: NPC memory system
+  - name: api-keys
+    description: API key management
+  - name: billing
+    description: AGL token billing
+  - name: analytics
+    description: Usage analytics
+  - name: dashboard
+    description: Dashboard summaries
+
 paths:
   /healthz:
     get:
@@ -24,6 +41,497 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Project deleted
+
+  /projects/{projectId}/npcs:
+    get:
+      operationId: listNpcs
+      tags: [npcs]
+      summary: List NPCs for a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of NPCs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Npc"
+    post:
+      operationId: createNpc
+      tags: [npcs]
+      summary: Create a new NPC
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNpcBody"
+      responses:
+        "201":
+          description: NPC created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+
+  /npcs/{id}:
+    get:
+      operationId: getNpc
+      tags: [npcs]
+      summary: Get NPC by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: NPC details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+    patch:
+      operationId: updateNpc
+      tags: [npcs]
+      summary: Update an NPC
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNpcBody"
+      responses:
+        "200":
+          description: NPC updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Npc"
+    delete:
+      operationId: deleteNpc
+      tags: [npcs]
+      summary: Delete an NPC
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: NPC deleted
+
+  /v1/npc/chat:
+    post:
+      operationId: npcChat
+      tags: [npc-chat]
+      summary: Chat with an NPC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NpcChatBody"
+      responses:
+        "200":
+          description: NPC response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NpcChatResponse"
+
+  /npcs/{npcId}/chat-history:
+    get:
+      operationId: getNpcChatHistory
+      tags: [npc-chat]
+      summary: Get chat history for an NPC
+      parameters:
+        - name: npcId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+
+  /v1/memory/{npcId}:
+    get:
+      operationId: getNpcMemory
+      tags: [memory]
+      summary: Get memory logs for an NPC
+      parameters:
+        - name: npcId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Memory entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemoryEntry"
+
+  /v1/memory/search:
+    post:
+      operationId: searchMemory
+      tags: [memory]
+      summary: Semantic search across NPC memories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemorySearchBody"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemoryEntry"
+
+  /api-keys:
+    get:
+      operationId: listApiKeys
+      tags: [api-keys]
+      summary: List API keys
+      responses:
+        "200":
+          description: List of API keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApiKey"
+    post:
+      operationId: createApiKey
+      tags: [api-keys]
+      summary: Create a new API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApiKeyBody"
+      responses:
+        "201":
+          description: API key created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyWithSecret"
+
+  /api-keys/{id}:
+    delete:
+      operationId: deleteApiKey
+      tags: [api-keys]
+      summary: Revoke an API key
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: API key revoked
+
+  /billing/balance:
+    get:
+      operationId: getBalance
+      tags: [billing]
+      summary: Get AGL token balance
+      responses:
+        "200":
+          description: Current balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+
+  /billing/transactions:
+    get:
+      operationId: listTransactions
+      tags: [billing]
+      summary: List billing transactions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Transaction history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /billing/deposit:
+    post:
+      operationId: depositAgl
+      tags: [billing]
+      summary: Deposit AGL tokens (simulated)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositBody"
+      responses:
+        "200":
+          description: Deposit successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+
+  /v1/usage:
+    get:
+      operationId: getUsage
+      tags: [analytics]
+      summary: Get usage statistics
+      parameters:
+        - name: projectId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Usage stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageStats"
+
+  /analytics/timeline:
+    get:
+      operationId: getAnalyticsTimeline
+      tags: [analytics]
+      summary: Get usage timeline data for charts
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        "200":
+          description: Timeline data points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimelinePoint"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /indexer/events:
+    get:
+      operationId: listIndexerEvents
+      tags: [dashboard]
+      summary: List simulated blockchain events
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Indexer events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IndexerEvent"
+
+    post:
+      operationId: simulateIndexerEvent
+      tags: [dashboard]
+      summary: Simulate a blockchain event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulateEventBody"
+      responses:
+        "201":
+          description: Event simulated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndexerEvent"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +542,488 @@ components:
       required:
         - status
 
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        npcCount:
+          type: integer
+        totalApiCalls:
+          type: integer
+        aglSpent:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - npcCount
+        - totalApiCalls
+        - aglSpent
+        - createdAt
+        - updatedAt
+
+    CreateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - description
+
+    UpdateProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    Npc:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        name:
+          type: string
+        personality:
+          type: string
+        systemPrompt:
+          type: string
+        model:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        messageCount:
+          type: integer
+        memoryCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectId
+        - name
+        - personality
+        - systemPrompt
+        - model
+        - status
+        - messageCount
+        - memoryCount
+        - createdAt
+        - updatedAt
+
+    CreateNpcBody:
+      type: object
+      properties:
+        name:
+          type: string
+        personality:
+          type: string
+        systemPrompt:
+          type: string
+        model:
+          type: string
+      required:
+        - name
+        - personality
+        - systemPrompt
+
+    UpdateNpcBody:
+      type: object
+      properties:
+        name:
+          type: string
+        personality:
+          type: string
+        systemPrompt:
+          type: string
+        model:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+
+    NpcChatBody:
+      type: object
+      properties:
+        npcId:
+          type: integer
+        message:
+          type: string
+        wallet:
+          type: string
+      required:
+        - npcId
+        - message
+
+    NpcChatResponse:
+      type: object
+      properties:
+        response:
+          type: string
+        npcId:
+          type: integer
+        memoryRecalled:
+          type: array
+          items:
+            type: string
+        aglCharged:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - response
+        - npcId
+        - memoryRecalled
+        - aglCharged
+        - timestamp
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        npcId:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        wallet:
+          type: string
+        aglCharged:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - npcId
+        - role
+        - content
+        - createdAt
+
+    MemoryEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        npcId:
+          type: integer
+        projectId:
+          type: integer
+        wallet:
+          type: string
+        text:
+          type: string
+        category:
+          type: string
+        importance:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - npcId
+        - projectId
+        - text
+        - category
+        - importance
+        - createdAt
+
+    MemorySearchBody:
+      type: object
+      properties:
+        npcId:
+          type: integer
+        query:
+          type: string
+        limit:
+          type: integer
+          default: 10
+      required:
+        - npcId
+        - query
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        prefix:
+          type: string
+        projectId:
+          type: integer
+        lastUsedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - prefix
+        - createdAt
+
+    ApiKeyWithSecret:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        key:
+          type: string
+        prefix:
+          type: string
+        projectId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - key
+        - prefix
+        - createdAt
+
+    CreateApiKeyBody:
+      type: object
+      properties:
+        name:
+          type: string
+        projectId:
+          type: integer
+      required:
+        - name
+
+    Balance:
+      type: object
+      properties:
+        balance:
+          type: number
+        walletAddress:
+          type: string
+        tokenAddress:
+          type: string
+        lastUpdated:
+          type: string
+          format: date-time
+      required:
+        - balance
+        - walletAddress
+        - tokenAddress
+        - lastUpdated
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [chat, memory_write, memory_search, deposit]
+        amount:
+          type: number
+        description:
+          type: string
+        projectId:
+          type: ["integer", "null"]
+        npcId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - amount
+        - description
+        - createdAt
+
+    DepositBody:
+      type: object
+      properties:
+        amount:
+          type: number
+      required:
+        - amount
+
+    UsageStats:
+      type: object
+      properties:
+        totalApiCalls:
+          type: integer
+        totalAglSpent:
+          type: number
+        activeNpcs:
+          type: integer
+        totalMemoryWrites:
+          type: integer
+        totalChats:
+          type: integer
+        totalSearches:
+          type: integer
+      required:
+        - totalApiCalls
+        - totalAglSpent
+        - activeNpcs
+        - totalMemoryWrites
+        - totalChats
+        - totalSearches
+
+    TimelinePoint:
+      type: object
+      properties:
+        date:
+          type: string
+        apiCalls:
+          type: integer
+        aglSpent:
+          type: number
+        chats:
+          type: integer
+        memoryWrites:
+          type: integer
+      required:
+        - date
+        - apiCalls
+        - aglSpent
+        - chats
+        - memoryWrites
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalProjects:
+          type: integer
+        totalNpcs:
+          type: integer
+        activeNpcs:
+          type: integer
+        totalApiCalls:
+          type: integer
+        totalAglSpent:
+          type: number
+        aglBalance:
+          type: number
+        totalMemories:
+          type: integer
+        recentChatCount:
+          type: integer
+      required:
+        - totalProjects
+        - totalNpcs
+        - activeNpcs
+        - totalApiCalls
+        - totalAglSpent
+        - aglBalance
+        - totalMemories
+        - recentChatCount
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [chat, memory_write, npc_created, project_created, api_key_created, deposit]
+        description:
+          type: string
+        projectName:
+          type: string
+        npcName:
+          type: string
+        aglAmount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - description
+        - createdAt
+
+    IndexerEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        eventType:
+          type: string
+          enum: [transfer, mint, stake, unstake, governance_vote]
+        blockNumber:
+          type: integer
+        txHash:
+          type: string
+        fromAddress:
+          type: string
+        toAddress:
+          type: string
+        amount:
+          type: number
+        data:
+          type: string
+        processed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - eventType
+        - blockNumber
+        - txHash
+        - fromAddress
+        - toAddress
+        - amount
+        - processed
+        - createdAt
+
+    SimulateEventBody:
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum: [transfer, mint, stake, unstake, governance_vote]
+        fromAddress:
+          type: string
+        toAddress:
+          type: string
+        amount:
+          type: number
+      required:
+        - eventType
+        - fromAddress
+        - toAddress
+        - amount
